@@ -9,4 +9,7 @@ class ApiEndpoints {
 
   /// Health check endpoint: `/health`
   static const String health = '/health';
+
+  /// Token refresh endpoint: `/auth/refresh`
+  static const String refreshToken = '/auth/refresh';
 }

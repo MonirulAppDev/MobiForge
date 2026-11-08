@@ -131,6 +131,15 @@ Standard mobile network requests fail in real life. We audited every edge case a
 - **What**: Integrated [`talker_flutter`](https://pub.dev/packages/talker_flutter) and [`talker_dio_logger`](https://pub.dev/packages/talker_dio_logger) in [`app_talker.dart`](lib/core/logging/app_talker.dart).
 - **Why**: Replaces simple console `print` with a structured diagnostics engine that powers an in-app debug screen (`TalkerScreen`) for QA engineers and developers.
 
+#### 5. Edge Case: "401 Token Refresh Race Condition (Thundering Herd)"
+- **The Problem**: When access token expires, if the app makes 3 concurrent API calls (e.g. cart badge count, user profile, notifications), all 3 fail with 401 simultaneously and trigger 3 parallel refresh calls! This leads to session corruption and user logout.
+- **The Solution**: Built [`auth_interceptor.dart`](lib/core/network/auth_interceptor.dart) using Dio's **`QueuedInterceptor`** and a mutex lock (`_refreshTokenFuture`).
+- **Decoupled Architecture (SRP & DIP)**: Following SOLID, the interceptor does NOT make HTTP calls directly. It delegates to an abstract [`token_refresher.dart`](lib/core/network/token_refresher.dart) (`DioTokenRefresher`), which reuses the centralized [`ApiEndpoints.refreshToken`](lib/core/constants/api_endpoints.dart) and an isolated `refreshDio` instance to prevent recursive deadlocks. It updates all queued requests with the new bearer token and replays them automatically.
+
+#### 6. Edge Case: "Memory Leaks & Zombie Requests"
+- **The Problem**: When a user leaves a screen or types rapidly in search, uncompleted background requests continue to download data, drain battery, and trigger errors on unmounted widgets.
+- **The Solution**: Created [`cancel_token_manager.dart`](lib/core/network/cancel_token_manager.dart). Automatically cancels prior requests with the same tag (e.g. during debounce) and provides clean lifecycle cancellation when screens are disposed.
+
 ---
 
 ## 🧩 SOLID Principles in Action
@@ -150,22 +159,28 @@ Standard mobile network requests fail in real life. We audited every edge case a
 When MobiForge makes an API call, this is the exact journey of the request:
 
 ```
-[Mobile User Action]
+[Mobile User Action / Screen Lifecycle]
        │
        ▼
-[ApiInterceptor] ──────(No Internet?)──────► Instant Fail (0ms)
+[CancelTokenManager] ──(Screen Exited?)──────► Instantly Cancelled (Zero Waste)
+       │
+       ▼
+[ApiInterceptor] ──────(No Internet?)────────► Instant Fail (0ms Pre-Flight Check)
        │ (Internet Available)
        ▼
-[RetryInterceptor] ───(Transient Drop?)────► Auto-Retry (1s, 2s, 3s backoff)
+[RetryInterceptor] ────(Transient Drop?)──────► Auto-Retry (1s, 2s, 3s backoff)
        │
        ▼
-[Dio HTTP Engine] ────────────────────────► Backend API (http://localhost:8080/health)
+[AuthInterceptor] ─────(401 Expired?)────────► Queued Mutex Lock -> Auto-Refresh & Replay
        │
        ▼
-[Talker Diagnostics] ─────────────────────► Real-Time In-App Network Inspector
+[Dio HTTP Engine] ───────────────────────────► Backend API (http://localhost:8080/health)
        │
        ▼
-[DioErrorHandler] ────(HTTP 4xx / 5xx?)───► Converts to clean ServerException
+[Talker Diagnostics] ────────────────────────► Real-Time In-App Network Inspector
+       │
+       ▼
+[DioErrorHandler] ─────(HTTP 4xx / 5xx?)─────► Converts to clean ServerException
 ```
 
 ---
