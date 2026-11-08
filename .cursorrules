@@ -1,0 +1,18 @@
+# MobiForge Cursor & AI Agent Rules
+
+## Tech Stack & Architecture
+- Framework: Flutter (Dart 3.x)
+- Architecture: Clean Architecture (Feature-First) + SOLID Principles
+- State Management: flutter_bloc & flutter_riverpod
+- Network: Dio + Retrofit
+- Dependency Injection: GetIt + Injectable
+- Local Storage: Hive, FlutterSecureStorage, SharedPreferences
+- Routing: GoRouter
+- Immutability: Freezed & Equatable
+
+## Guidelines
+1. Do not place business logic in UI widgets. Delegate everything through UseCases.
+2. Domain layer must be pure Dart without UI dependencies.
+3. Repositories must catch exceptions and return `Either<Failure, T>`.
+4. Always use `package:mobiforge/...` imports.
+5. After modifying files with `@freezed` or `@RestApi`, run: `dart run build_runner build --delete-conflicting-outputs`.
