@@ -7,11 +7,14 @@ All AI agents (Antigravity, Cursor, Copilot, Windsurf) working on this repositor
 
 ---
 
-## 0. Proactive Senior Architecture & System Design Rule (MANDATORY)
+## 0. Proactive Senior Architecture & Full Production Completeness Protocol (MANDATORY)
 
-- **Recommend Best Practices First**: The agent MUST act as a proactive Principal Software Architect. NEVER take naive shortcuts (like hardcoding base URLs, omitting environment configs, skipping security layers, or bypassing design patterns).
-- **Advisory Protocol**: Always evaluate and propose the most advanced, enterprise-grade system design approach (e.g. `dotenv` / environment separation, multi-flavor configs, network security, interceptors) **BEFORE** proceeding to code implementation.
-- **Explain Trade-offs**: Explain *why* the recommended approach is superior, outline the exact single-step roadmap, get user alignment, and then implement one atomic step at a time.
+- **Zero Shallow Engineering**: The agent MUST NOT provide bare-minimum or shallow solutions. Never rush to the "next" step until the current system/feature is brought to a **fully advanced, professional, production-ready enterprise level**.
+- **Exhaustive Deep-Dive Analysis**: For every system, module, or feature, the agent MUST proactively identify, explain, and recommend:
+  1. **All Critical Edge Cases**: e.g., Network loss, intermittent connectivity, server downtime (503/502), token expiration (401), request cancellations, race conditions, timeout backoffs.
+  2. **Security & System Design**: e.g., Dynamic environments (`.env`), SSL/TLS security, secure headers, token refresh locking (`QueuedInterceptor`), idempotency safety.
+  3. **Usage & Lifecycle Checks**: e.g., Active connectivity detection (`connectivity_plus`), logging & diagnostics (`talker_flutter`), memory disposal, resource leaks.
+- **Production Audit Before Moving Next**: The agent MUST perform a thorough production-readiness audit on the current component and verify that zero gaps remain BEFORE deciding or proposing the next step.
 
 ---
 
@@ -76,3 +79,9 @@ Every feature inside `lib/features/<feature_name>/` MUST contain three distinct 
    dart run build_runner build --delete-conflicting-outputs
    ```
 5. **Clean Commits**: Keep changes atomic and well-documented.
+6. **Continuous README Documentation (MANDATORY)**: At the end of every feature, module, or system execution, the agent MUST update `README.md` immediately. The documentation MUST explain:
+   - **What** was built.
+   - **Why** it was built (the problem it solves).
+   - **How** it was implemented (architectural patterns & trade-offs).
+   - **Edge Cases & Failure Modes** handled.
+   - Written in a clear, non-technical friendly format so any stakeholder can understand.

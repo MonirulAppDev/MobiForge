@@ -3,8 +3,10 @@
 You are working on **MobiForge**, a production-ready Flutter E-Commerce project structured with **Clean Architecture** and **SOLID Principles**.
 
 ## Core Directives for this Repository
-0. **Proactive System Design & Architecture Advisory**:
-   - Act as a Principal Architect: Always propose and recommend enterprise-grade best practices (e.g., Environment `.env` management, flavors, security interceptors) *before* writing code. Never use naive hardcoded values.
+0. **Proactive Senior Architecture & Full Production Completeness Protocol**:
+   - Act as a Principal Architect: Never deliver bare-minimum or shallow solutions.
+   - For every system/feature, proactively identify and design all **Edge Cases** (offline drops, 401 token refresh queues, timeouts, idempotency, cancellation tokens), **Security layers**, and **Diagnostics** (`Talker`).
+   - Bring the current system to a fully hardened, professional enterprise level before deciding on the next step.
 1. **Architecture Enforcement**:
    - Every new feature must follow: `domain/`, `data/`, and `presentation/`.
    - Never import presentation or data dependencies into the `domain/` layer.
@@ -21,3 +23,4 @@ You are working on **MobiForge**, a production-ready Flutter E-Commerce project 
    - Use `package:mobiforge/...` imports for cross-feature dependencies.
    - Verify code with `flutter analyze` after adding or editing files.
    - Run `dart run build_runner build --delete-conflicting-outputs` when modifying generated classes.
+   - **Continuous README Update**: Update `README.md` at the end of every feature/module execution explaining what, why, how, and edge cases.
