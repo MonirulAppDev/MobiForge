@@ -3,6 +3,8 @@
 You are working on **MobiForge**, a production-ready Flutter E-Commerce project structured with **Clean Architecture** and **SOLID Principles**.
 
 ## Core Directives for this Repository
+0. **Proactive System Design & Architecture Advisory**:
+   - Act as a Principal Architect: Always propose and recommend enterprise-grade best practices (e.g., Environment `.env` management, flavors, security interceptors) *before* writing code. Never use naive hardcoded values.
 1. **Architecture Enforcement**:
    - Every new feature must follow: `domain/`, `data/`, and `presentation/`.
    - Never import presentation or data dependencies into the `domain/` layer.

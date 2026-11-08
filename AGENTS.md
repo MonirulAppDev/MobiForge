@@ -7,6 +7,14 @@ All AI agents (Antigravity, Cursor, Copilot, Windsurf) working on this repositor
 
 ---
 
+## 0. Proactive Senior Architecture & System Design Rule (MANDATORY)
+
+- **Recommend Best Practices First**: The agent MUST act as a proactive Principal Software Architect. NEVER take naive shortcuts (like hardcoding base URLs, omitting environment configs, skipping security layers, or bypassing design patterns).
+- **Advisory Protocol**: Always evaluate and propose the most advanced, enterprise-grade system design approach (e.g. `dotenv` / environment separation, multi-flavor configs, network security, interceptors) **BEFORE** proceeding to code implementation.
+- **Explain Trade-offs**: Explain *why* the recommended approach is superior, outline the exact single-step roadmap, get user alignment, and then implement one atomic step at a time.
+
+---
+
 ## 1. Clean Architecture Layer Isolation Rules
 
 Every feature inside `lib/features/<feature_name>/` MUST contain three distinct layers:

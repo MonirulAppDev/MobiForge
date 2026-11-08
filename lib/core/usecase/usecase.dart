@@ -3,21 +3,21 @@ import '../utils/typedefs.dart';
 
 /// Base contract for UseCases that require input parameters.
 ///
-/// [Type]: The expected return data type (e.g., UserEntity).
-/// [Params]: The input parameter object (e.g., LoginParams).
-abstract class UseCaseWithParams<Type, Params> {
+/// [T]: The expected return data type (e.g., `UserEntity`).
+/// [Params]: The input parameter object (e.g., `LoginParams`).
+abstract class UseCaseWithParams<T, Params> {
   const UseCaseWithParams();
 
-  ResultFuture<Type> call(Params params);
+  ResultFuture<T> call(Params params);
 }
 
 /// Base contract for UseCases that do NOT require any parameters.
 ///
-/// [Type]: The expected return data type (e.g., List<ProductEntity>).
-abstract class UseCaseWithoutParams<Type> {
+/// [T]: The expected return data type (e.g., `List<ProductEntity>`).
+abstract class UseCaseWithoutParams<T> {
   const UseCaseWithoutParams();
 
-  ResultFuture<Type> call();
+  ResultFuture<T> call();
 }
 
 /// Helper class for cases where an empty parameter is needed.
