@@ -158,11 +158,30 @@ Standard mobile network requests fail in real life. We audited every edge case a
    - **Declarative Architecture (`@RestApi`)**: Uses `@GET(ApiEndpoints.health)` and `@CancelRequest() CancelToken? cancelToken`.
    - **Generated Plumbing ([`splash_remote_data_source.g.dart`](lib/features/splash/data/datasources/splash_remote_data_source.g.dart))**: Retrofit automatically handles request composition, headers, response type conversion (`ResponseType.json`), cancellation token binding, and JSON decoding directly into `HealthModel`.
 
-3. **Enterprise Repository Implementation ([`splash_repository_impl.dart`](lib/features/splash/data/repositories/splash_repository_impl.dart))**:
+3. **Centralized Error Boundary Base Repository ([`base_repository.dart`](lib/core/repositories/base_repository.dart))**:
+   - **DRY & Single Responsibility**: Centralizes pre-flight connectivity checks and exhaustive error mapping (`DioException`, `ServerException`, `NetworkException`, `FormatException`, `TypeError`, catch-all) into a reusable `safeNetworkCall` method. Eliminates repetitive 30-line try-catch boilerplate across all future feature repositories.
+
+4. **Enterprise Repository Implementation ([`splash_repository_impl.dart`](lib/features/splash/data/repositories/splash_repository_impl.dart))**:
    - **Boundary Isolation (DIP)**: Implements the Domain contract `SplashRepository` without leaking network implementation details.
-   - **Pre-Flight Connectivity Guard**: Checks `networkInfo.isConnected` before dispatching network calls, returning `Left(NetworkFailure)` immediately if offline.
-   - **Zero Exception Leakage (Error Boundary)**: Catches low-level `DioException`, `ServerException`, `NetworkException`, `FormatException`, and `TypeError`, safely converting them into strongly-typed `Failure` objects (`ServerFailure`, `NetworkFailure`). The presentation and domain layers never crash from unhandled exceptions.
-   - **DTO to Entity Transformation**: Converts `HealthModel` to `HealthEntity` via `.toEntity()` to preserve layer segregation.
+   - **Ultra-Clean Execution**: Extends `BaseRepository` to invoke `safeNetworkCall` in just 6 lines, ensuring 100% layer isolation and zero exception leakage.
+   - **DTO to Entity Transformation**: Converts `HealthModel` to `HealthEntity` via `.toEntity()` to preserve pure domain logic.
+
+---
+
+### Phase 6: Compile-Time Dependency Injection (`injection_container.dart`)
+
+1. **Central Service Locator ([`injection_container.dart`](lib/core/di/injection_container.dart))**:
+   - Built with **`GetIt`** (`sl`) and **`@InjectableInit`** for automatic, compile-time dependency graph generation.
+   - Eliminates 100% of handwritten manual locator code (`sl.registerLazySingleton(...)`).
+
+2. **Feature Modularity ([`splash_module.dart`](lib/features/splash/splash_module.dart))**:
+   - **Preserves Domain Layer Purity**: Provides `CheckServerHealthUseCase` without forcing the Domain layer to import third-party DI annotations.
+   - **Retrofit DI Wiring**: Instantiates `SplashRemoteDataSource(dio)` cleanly with the configured primary `Dio` singleton.
+
+3. **Generated Dependency Graph ([`injection_container.config.dart`](lib/core/di/injection_container.config.dart))**:
+   - Complete dependency resolution order:
+     `Connectivity` ➔ `NetworkInfo` ➔ `TokenStorage` ➔ `refreshDio` ➔ `TokenRefresher` ➔ `ApiInterceptor` ➔ `Dio` ➔ `SplashRemoteDataSource` ➔ `SplashRepositoryImpl` (as `SplashRepository`) ➔ `CheckServerHealthUseCase`.
+   - Compile-time verified with zero missing dependencies.
 
 ---
 
