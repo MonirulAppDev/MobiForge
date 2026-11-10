@@ -1,7 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
-import '../../../../core/constants/api_endpoints.dart';
-import '../models/health_model.dart';
+
+import 'package:mobiforge/core/constants/api_endpoints.dart';
+import 'package:mobiforge/features/splash/data/models/health_model.dart';
 
 part 'splash_remote_data_source.g.dart';
 

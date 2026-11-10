@@ -1,7 +1,7 @@
 import 'package:mobiforge/core/usecase/usecase.dart';
 import 'package:mobiforge/core/utils/typedefs.dart';
-import '../entities/health_entity.dart';
-import '../repositories/splash_repository.dart';
+import 'package:mobiforge/features/splash/domain/entities/health_entity.dart';
+import 'package:mobiforge/features/splash/domain/repositories/splash_repository.dart';
 
 /// Encapsulates the business operation of checking the backend server health.
 ///

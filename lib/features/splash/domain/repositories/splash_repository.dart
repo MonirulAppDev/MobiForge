@@ -1,5 +1,5 @@
 import 'package:mobiforge/core/utils/typedefs.dart';
-import '../entities/health_entity.dart';
+import 'package:mobiforge/features/splash/domain/entities/health_entity.dart';
 
 /// Abstract contract for Splash & Server Health operations.
 ///

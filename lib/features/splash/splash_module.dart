@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 
-import 'data/datasources/splash_remote_data_source.dart';
-import 'domain/repositories/splash_repository.dart';
-import 'domain/usecases/check_server_health_usecase.dart';
+import 'package:mobiforge/features/splash/data/datasources/splash_remote_data_source.dart';
+import 'package:mobiforge/features/splash/domain/repositories/splash_repository.dart';
+import 'package:mobiforge/features/splash/domain/usecases/check_server_health_usecase.dart';
 
 /// Injectable module providing dependencies for the Splash / Health check feature.
 @module

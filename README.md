@@ -185,6 +185,33 @@ Standard mobile network requests fail in real life. We audited every edge case a
 
 ---
 
+### Phase 7: Modern Riverpod State Management (`splash_controller.dart`)
+
+1. **Declarative AsyncNotifier ([`splash_controller.dart`](lib/features/splash/presentation/controllers/splash_controller.dart))**:
+   - Built with **`riverpod_annotation`** and code generation (`@riverpod`).
+   - Automatically returns native **`AsyncValue<HealthEntity>`** for pattern matching (`.when()`).
+   - **Bridging GetIt & Riverpod**: Injects `CheckServerHealthUseCase` from GetIt via `checkServerHealthUseCaseProvider`, making the entire presentation layer easily mockable in widget tests without touching the Service Locator.
+   - **Idiomatic Retry Flow**: Implements `retry()` leveraging `AsyncValue.guard`, seamlessly flipping states to `AsyncLoading()` and executing clean retries.
+   - **Zero Boilerplate**: Generated `splash_controller.g.dart` wires up auto-dispose lifecycle management to eliminate memory leaks.
+
+2. **Atomic Presentation Widgets ([`widgets/`](lib/features/splash/presentation/widgets/))**:
+   - **Single Responsibility (Under 150 Lines)**: Decomposed into atomic, reusable UI components:
+     - [`splash_loading_view.dart`](lib/features/splash/presentation/widgets/splash_loading_view.dart): Renders pulsing brand spinner with smooth `flutter_animate` text fades.
+     - [`splash_error_view.dart`](lib/features/splash/presentation/widgets/splash_error_view.dart): Renders cloud-off illustration, error status badge (`HTTP 503`), user-friendly message, and interactive "Retry Connection" CTA.
+     - [`splash_success_view.dart`](lib/features/splash/presentation/widgets/splash_success_view.dart): Displays green health badge with backend metadata (`app`, `environment`, `status`).
+
+3. **Responsive Splash Screen ([`splash_screen.dart`](lib/features/splash/presentation/screens/splash_screen.dart))**:
+   - Extends **`ConsumerWidget`** to consume `SplashController`.
+   - **Side-Effects Management (`ref.listen`)**: Logs health check outcomes directly to `AppTalker` diagnostics for QA.
+   - **Declarative Pattern Matching (`.when()`)**: Compiles exhaustive UI branches (`data`, `loading`, `error`), guaranteeing zero unhandled visual states.
+   - Fully responsive layout engineered with `flutter_screenutil` and `gap`.
+
+4. **Production App Entry Point ([`main.dart`](lib/main.dart))**:
+   - Orchestrates async bootstrap sequence: `WidgetsFlutterBinding` ➔ `EnvConfig.init()` (Fail-Fast) ➔ `configureDependencies()` (GetIt/Injectable).
+   - Wraps application in **`ProviderScope`** equipped with custom **[`AppRiverpodObserver`](lib/core/logging/riverpod_talker_observer.dart)** for real-time telemetry into `Talker`.
+
+---
+
 ## 🧩 SOLID Principles in Action
 
 | Principle | Meaning in Plain English | Real Example in MobiForge |

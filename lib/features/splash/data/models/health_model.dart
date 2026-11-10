@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import '../../domain/entities/health_entity.dart';
+import 'package:mobiforge/features/splash/domain/entities/health_entity.dart';
 
 part 'health_model.freezed.dart';
 part 'health_model.g.dart';
