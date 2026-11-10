@@ -12,6 +12,7 @@
    - [Phase 2: Security & Zero-Hardcoding Environment Setup](#phase-2-security--zero-hardcoding-environment-setup)
    - [Phase 3: Splash & Backend Health Check (Domain Layer)](#phase-3-splash--backend-health-check-domain-layer)
    - [Phase 4: Battle-Hardened Network Engine](#phase-4-battle-hardened-network-engine)
+   - [Phase 5: Splash Data Layer — Freezed DTO & Model](#phase-5-splash-data-layer--freezed-dto--model)
 4. [SOLID Principles in Action](#-solid-principles-in-action)
 5. [Visual Network Pipeline](#-visual-network-pipeline)
 6. [Tech Stack & Architecture Map](#-tech-stack--architecture-map)
@@ -139,6 +140,29 @@ Standard mobile network requests fail in real life. We audited every edge case a
 #### 6. Edge Case: "Memory Leaks & Zombie Requests"
 - **The Problem**: When a user leaves a screen or types rapidly in search, uncompleted background requests continue to download data, drain battery, and trigger errors on unmounted widgets.
 - **The Solution**: Created [`cancel_token_manager.dart`](lib/core/network/cancel_token_manager.dart). Automatically cancels prior requests with the same tag (e.g. during debounce) and provides clean lifecycle cancellation when screens are disposed.
+
+---
+
+### Phase 5: Splash Data Layer — Freezed DTO & Model
+
+1. **[`health_model.dart`](lib/features/splash/data/models/health_model.dart)**:
+   - Built with **`@freezed`** and **`json_serializable`** to eliminate 100% of handwritten boilerplate.
+   - Generates immutable `copyWith()`, `operator ==`, `hashCode`, `toString()`, and defensive JSON serialization (`fromJson` / `toJson`).
+   - **Complete Bidirectional Mapping (`.toEntity()` & `.fromEntity()`)**:
+     - `toEntity()`: Converts API response DTO `HealthModel` into pure business [`HealthEntity`](lib/features/splash/domain/entities/health_entity.dart) to pass upstream to Domain & UI layers.
+     - `fromEntity()`: Converts Domain `HealthEntity` back into `HealthModel` whenever the data layer needs to serialize, cache, or send data back to APIs.
+     - The Domain layer remains 100% decoupled from third-party code generators.
+
+2. **Declarative Retrofit REST Client ([`splash_remote_data_source.dart`](lib/features/splash/data/datasources/splash_remote_data_source.dart))**:
+   - **Why Retrofit over Manual `dio.get()`?**: Manual `dio.get()` calls require hand-written URL strings, manual HTTP status code checks, manual parsing (`HealthModel.fromJson(response.data)`), and error-prone boilerplate. Retrofit eliminates 100% of this boilerplate by generating a compile-time, type-safe implementation (`_SplashRemoteDataSource`).
+   - **Declarative Architecture (`@RestApi`)**: Uses `@GET(ApiEndpoints.health)` and `@CancelRequest() CancelToken? cancelToken`.
+   - **Generated Plumbing ([`splash_remote_data_source.g.dart`](lib/features/splash/data/datasources/splash_remote_data_source.g.dart))**: Retrofit automatically handles request composition, headers, response type conversion (`ResponseType.json`), cancellation token binding, and JSON decoding directly into `HealthModel`.
+
+3. **Enterprise Repository Implementation ([`splash_repository_impl.dart`](lib/features/splash/data/repositories/splash_repository_impl.dart))**:
+   - **Boundary Isolation (DIP)**: Implements the Domain contract `SplashRepository` without leaking network implementation details.
+   - **Pre-Flight Connectivity Guard**: Checks `networkInfo.isConnected` before dispatching network calls, returning `Left(NetworkFailure)` immediately if offline.
+   - **Zero Exception Leakage (Error Boundary)**: Catches low-level `DioException`, `ServerException`, `NetworkException`, `FormatException`, and `TypeError`, safely converting them into strongly-typed `Failure` objects (`ServerFailure`, `NetworkFailure`). The presentation and domain layers never crash from unhandled exceptions.
+   - **DTO to Entity Transformation**: Converts `HealthModel` to `HealthEntity` via `.toEntity()` to preserve layer segregation.
 
 ---
 
