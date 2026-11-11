@@ -10,11 +10,10 @@ class RetryInterceptor extends Interceptor {
 
   RetryInterceptor({
     required this.dio,
-    this.maxRetries = 3,
+    this.maxRetries = 2,
     this.retryDelays = const [
+      Duration(milliseconds: 800),
       Duration(seconds: 1),
-      Duration(seconds: 2),
-      Duration(seconds: 3),
     ],
   });
 

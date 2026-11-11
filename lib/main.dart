@@ -10,7 +10,8 @@ import 'package:mobiforge/core/di/injection_container.dart';
 import 'package:mobiforge/core/logging/riverpod_talker_observer.dart';
 import 'package:mobiforge/features/splash/presentation/screens/splash_screen.dart';
 
-void main() async {
+/// Centralized application bootstrap routine parameterized by [AppFlavor].
+Future<void> bootstrap({required AppFlavor flavor}) async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // 1. Configure System UI Overlay style
@@ -23,8 +24,8 @@ void main() async {
     ),
   );
 
-  // 2. Load Environment Variables (Fail-Fast)
-  await EnvConfig.init();
+  // 2. Load Flavor-specific Environment Variables (Fail-Fast)
+  await EnvConfig.init(flavor: flavor);
 
   // 3. Configure Compile-Time Dependency Injection
   await configureDependencies();
@@ -38,19 +39,28 @@ void main() async {
   );
 }
 
+/// Default entry point runs the development flavor.
+void main() => bootstrap(flavor: AppFlavor.dev);
+
 class MobiForgeApp extends StatelessWidget {
   const MobiForgeApp({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final titleSuffix = EnvConfig.isDev
+        ? ' (Dev)'
+        : EnvConfig.isStaging
+            ? ' (Staging)'
+            : '';
+
     return ScreenUtilInit(
       designSize: const Size(375, 812),
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
         return MaterialApp(
-          title: AppConstants.appName,
-          debugShowCheckedModeBanner: false,
+          title: '${AppConstants.appName}$titleSuffix',
+          debugShowCheckedModeBanner: EnvConfig.isDev,
           theme: ThemeData(
             useMaterial3: true,
             brightness: Brightness.dark,

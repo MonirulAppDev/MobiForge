@@ -1,11 +1,11 @@
 import 'package:mobiforge/core/utils/typedefs.dart';
-import 'package:mobiforge/features/splash/domain/entities/health_entity.dart';
+import 'package:mobiforge/features/splash/domain/entities/mobile_config_entity.dart';
 
-/// Abstract contract for Splash & Server Health operations.
+/// Domain repository contract defining mobile configuration retrieval.
 ///
-/// Follows SOLID Dependency Inversion Principle (DIP):
-/// Domain Layer defines the contract, Data Layer implements it.
+/// Follows Dependency Inversion Principle (DIP):
+/// Domain defines the contract; Data layer provides the implementation.
 abstract class SplashRepository {
-  /// Checks whether the backend server is reachable and healthy.
-  ResultFuture<HealthEntity> checkServerHealth();
+  /// Fetches remote mobile configuration from `/mobile/config`.
+  ResultFuture<MobileConfigEntity> getMobileConfig();
 }

@@ -13,6 +13,11 @@
    - [Phase 3: Splash & Backend Health Check (Domain Layer)](#phase-3-splash--backend-health-check-domain-layer)
    - [Phase 4: Battle-Hardened Network Engine](#phase-4-battle-hardened-network-engine)
    - [Phase 5: Splash Data Layer — Freezed DTO & Model](#phase-5-splash-data-layer--freezed-dto--model)
+   - [Phase 6: Compile-Time Dependency Injection](#phase-6-compile-time-dependency-injection-injection_containerdart)
+   - [Phase 7: Modern Riverpod State Management](#phase-7-modern-riverpod-state-management-splash_controllerdart)
+   - [Phase 8: Enterprise Multi-Flavor Architecture](#phase-8-enterprise-multi-flavor-architecture-dev-staging-prod)
+   - [Phase 9: Network Timeout Optimization & ADB Port Forwarding](#phase-9-network-timeout-optimization--physical-device-port-forwarding)
+   - [Phase 10: Remote Mobile Config & Microservices Registry](#phase-10-remote-mobile-configuration--microservice-service-registry)
 4. [SOLID Principles in Action](#-solid-principles-in-action)
 5. [Visual Network Pipeline](#-visual-network-pipeline)
 6. [Tech Stack & Architecture Map](#-tech-stack--architecture-map)
@@ -209,6 +214,77 @@ Standard mobile network requests fail in real life. We audited every edge case a
 4. **Production App Entry Point ([`main.dart`](lib/main.dart))**:
    - Orchestrates async bootstrap sequence: `WidgetsFlutterBinding` ➔ `EnvConfig.init()` (Fail-Fast) ➔ `configureDependencies()` (GetIt/Injectable).
    - Wraps application in **`ProviderScope`** equipped with custom **[`AppRiverpodObserver`](lib/core/logging/riverpod_talker_observer.dart)** for real-time telemetry into `Talker`.
+
+---
+
+### Phase 8: Enterprise Multi-Flavor Architecture (`dev`, `staging`, `prod`)
+
+1. **Native Android Product Flavors ([`build.gradle.kts`](android/app/build.gradle.kts))**:
+   - Declares `flavorDimensions += "default"` with three isolated build flavors:
+     - **`dev`**: `applicationIdSuffix = ".dev"`, App Name: `"MobiForge Dev"`.
+     - **`staging`**: `applicationIdSuffix = ".staging"`, App Name: `"MobiForge Staging"`.
+     - **`prod`**: `applicationId = "com.monirul.mobiforge"`, App Name: `"MobiForge"`.
+   - Enables all three variations to be installed **side-by-side on the same physical device** without overwriting each other.
+
+2. **Environment Isolation**:
+   - [`.env.dev`](.env.dev): Points to local/dev backend (`http://localhost:8080`).
+   - [`.env.staging`](.env.staging): Points to staging/QA backend (`https://staging-api.mobiforge.com`).
+   - [`.env.prod`](.env.prod): Points to live production backend (`https://api.mobiforge.com`).
+   - Dynamic typed loading via [`EnvConfig.init(flavor: AppFlavor)`](lib/core/config/env_config.dart).
+
+3. **Dedicated Entry Points & VS Code Integration**:
+   - [`lib/main_dev.dart`](lib/main_dev.dart) ➔ `flutter run --flavor dev -t lib/main_dev.dart`
+   - [`lib/main_staging.dart`](lib/main_staging.dart) ➔ `flutter run --flavor staging -t lib/main_staging.dart`
+   - [`lib/main_prod.dart`](lib/main_prod.dart) ➔ `flutter run --flavor prod -t lib/main_prod.dart`
+   - [`.vscode/launch.json`](.vscode/launch.json): 1-click debug launcher for each flavor in VS Code.
+
+---
+
+### Phase 9: Network Timeout Optimization & Physical Device Port Forwarding
+
+1. **Edge Case: Mobile Dual-Stack Timeout Multiplication (3-4 Minute Freeze)**:
+   - **The Problem**: On physical Android devices, querying `localhost` triggers dual-stack DNS (IPv6 `[::1]` falling back to IPv4 `127.0.0.1`). If `CONNECT_TIMEOUT` is 15 seconds, a single failed attempt takes 30 seconds. Combined with 3 auto-retries (1s + 2s + 3s), the app freezes in loading for **3 to 4 minutes** before rendering an error!
+   - **The Solution**: 
+     - Reduced `CONNECT_TIMEOUT` to **5000ms (5 seconds)** and `RECEIVE_TIMEOUT` to **8000ms (8 seconds)** across all environment configs.
+     - Hardened [`RetryInterceptor`](lib/core/network/retry_interceptor.dart) to `maxRetries = 2` with swift delays (800ms, 1000ms), bringing total failure detection down from 240 seconds to **under 15 seconds**.
+     - Configured `sendTimeout` in `Dio` BaseOptions.
+
+2. **Physical Device `localhost` Networking via ADB Reverse**:
+   - On a physical phone, `localhost` points to the phone itself, not the host computer.
+   - Forwarding host backend ports via Android Debug Bridge (ADB):
+     ```bash
+     8080..8088 | ForEach-Object { adb reverse "tcp:$_" "tcp:$_" }
+     ```
+   - Automatically routes all phone requests to `http://localhost:8080` (and microservices 8081-8088) directly to the PC's backend server over USB.
+
+---
+
+### Phase 10: Remote Mobile Configuration & Microservice Service Registry
+
+1. **Dynamic Remote Bootstrap Architecture**:
+   - Switched from raw health ping to production-grade remote mobile configuration: `http://localhost:8080/api/v1/mobile/config`.
+   - Payload captures full enterprise operational metadata:
+     - **Dynamic Feature Flags**: `mock_ai_enabled`, `mock_otp_enabled`, `mock_payment_enabled`, `testing_toolkit`.
+     - **Microservice Service Registry**: Dynamic URLs for `auth`, `catalog`, `commerce`, `payments`, `ai`, `media`, `notifications`, `chat`, and `unified` gateway.
+     - **Gatekeeper Controls**: Dynamic `maintenance_mode` with custom broadcast message, plus `force_update` version checks.
+
+2. **Clean Architecture Domain Entities ([`mobile_config_entity.dart`](lib/features/splash/domain/entities/mobile_config_entity.dart))**:
+   - Pure business objects (`MobileConfigEntity`, `ConfigFeaturesEntity`, `ConfigServicesEntity`) extending `Equatable`.
+   - Free from serialization and UI dependencies.
+
+3. **Freezed & JSON Serializable Data Models ([`mobile_config_model.dart`](lib/features/splash/data/models/mobile_config_model.dart))**:
+   - Automated immutable data transfer objects with bidirectional transformation (`.toEntity()` and `.fromEntity()`).
+
+4. **Centralized Service Registry Singleton ([`app_config_manager.dart`](lib/core/config/app_config_manager.dart))**:
+   - Thread-safe repository caching the active remote configuration in memory.
+   - Downstream features can query microservice URLs and feature flags dynamically without duplicate network roundtrips.
+
+5. **Minimal Executive Splash Screen**:
+   - Clean, decluttered design focusing on brand elegance:
+     - Normal operational state: Subtle, animated "Ready • v1.2.0" status chip.
+     - Maintenance state: Friendly, non-blocking maintenance dialog.
+     - Force update state: Clean version upgrade prompt.
+     - Zero technical JSON dumps or cluttered debug badges.
 
 ---
 

@@ -21,17 +21,19 @@ class _SplashRemoteDataSource implements SplashRemoteDataSource {
   final ParseErrorLogger? errorLogger;
 
   @override
-  Future<HealthModel> checkServerHealth({CancelToken? cancelToken}) async {
+  Future<MobileConfigResponseModel> getMobileConfig({
+    CancelToken? cancelToken,
+  }) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<HealthModel>(
+    final _options = _setStreamType<MobileConfigResponseModel>(
       Options(method: 'GET', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/health',
+            '/mobile/config',
             queryParameters: queryParameters,
             data: _data,
             cancelToken: cancelToken,
@@ -39,9 +41,9 @@ class _SplashRemoteDataSource implements SplashRemoteDataSource {
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late HealthModel _value;
+    late MobileConfigResponseModel _value;
     try {
-      _value = HealthModel.fromJson(_result.data!);
+      _value = MobileConfigResponseModel.fromJson(_result.data!);
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options, response: _result);
       rethrow;

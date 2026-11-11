@@ -90,6 +90,7 @@ abstract class NetworkModule {
         baseUrl: EnvConfig.baseUrl,
         connectTimeout: Duration(milliseconds: EnvConfig.connectTimeout),
         receiveTimeout: Duration(milliseconds: EnvConfig.receiveTimeout),
+        sendTimeout: Duration(milliseconds: EnvConfig.connectTimeout),
       ),
     );
 

@@ -12,76 +12,76 @@ part of 'splash_controller.dart';
 ///
 /// Enables seamless mock overrides in widget and unit tests without touching GetIt.
 
-@ProviderFor(checkServerHealthUseCase)
-final checkServerHealthUseCaseProvider = CheckServerHealthUseCaseProvider._();
+@ProviderFor(getMobileConfigUseCase)
+final getMobileConfigUseCaseProvider = GetMobileConfigUseCaseProvider._();
 
 /// Bridges the Domain UseCase from GetIt into Riverpod's provider tree.
 ///
 /// Enables seamless mock overrides in widget and unit tests without touching GetIt.
 
-final class CheckServerHealthUseCaseProvider
+final class GetMobileConfigUseCaseProvider
     extends
         $FunctionalProvider<
-          CheckServerHealthUseCase,
-          CheckServerHealthUseCase,
-          CheckServerHealthUseCase
+          GetMobileConfigUseCase,
+          GetMobileConfigUseCase,
+          GetMobileConfigUseCase
         >
-    with $Provider<CheckServerHealthUseCase> {
+    with $Provider<GetMobileConfigUseCase> {
   /// Bridges the Domain UseCase from GetIt into Riverpod's provider tree.
   ///
   /// Enables seamless mock overrides in widget and unit tests without touching GetIt.
-  CheckServerHealthUseCaseProvider._()
+  GetMobileConfigUseCaseProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'checkServerHealthUseCaseProvider',
+        name: r'getMobileConfigUseCaseProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$checkServerHealthUseCaseHash();
+  String debugGetCreateSourceHash() => _$getMobileConfigUseCaseHash();
 
   @$internal
   @override
-  $ProviderElement<CheckServerHealthUseCase> $createElement(
+  $ProviderElement<GetMobileConfigUseCase> $createElement(
     $ProviderPointer pointer,
   ) => $ProviderElement(pointer);
 
   @override
-  CheckServerHealthUseCase create(Ref ref) {
-    return checkServerHealthUseCase(ref);
+  GetMobileConfigUseCase create(Ref ref) {
+    return getMobileConfigUseCase(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(CheckServerHealthUseCase value) {
+  Override overrideWithValue(GetMobileConfigUseCase value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<CheckServerHealthUseCase>(value),
+      providerOverride: $SyncValueProvider<GetMobileConfigUseCase>(value),
     );
   }
 }
 
-String _$checkServerHealthUseCaseHash() =>
-    r'aba67fd3af7bc0d195fb607f0e8d558ea82a949b';
+String _$getMobileConfigUseCaseHash() =>
+    r'd4689e8e047ba2b4650b680c6d0ecce2cf8bc8ff';
 
-/// Declarative Riverpod AsyncNotifier managing the backend server health verification.
+/// Declarative Riverpod AsyncNotifier managing dynamic mobile configuration bootstrap.
 ///
-/// Automatically provides an [AsyncValue<HealthEntity>] with pattern-matching [.when()].
+/// Automatically provides an [AsyncValue<MobileConfigEntity>] with pattern-matching [.when()].
 
 @ProviderFor(SplashController)
 final splashControllerProvider = SplashControllerProvider._();
 
-/// Declarative Riverpod AsyncNotifier managing the backend server health verification.
+/// Declarative Riverpod AsyncNotifier managing dynamic mobile configuration bootstrap.
 ///
-/// Automatically provides an [AsyncValue<HealthEntity>] with pattern-matching [.when()].
+/// Automatically provides an [AsyncValue<MobileConfigEntity>] with pattern-matching [.when()].
 final class SplashControllerProvider
-    extends $AsyncNotifierProvider<SplashController, HealthEntity> {
-  /// Declarative Riverpod AsyncNotifier managing the backend server health verification.
+    extends $AsyncNotifierProvider<SplashController, MobileConfigEntity> {
+  /// Declarative Riverpod AsyncNotifier managing dynamic mobile configuration bootstrap.
   ///
-  /// Automatically provides an [AsyncValue<HealthEntity>] with pattern-matching [.when()].
+  /// Automatically provides an [AsyncValue<MobileConfigEntity>] with pattern-matching [.when()].
   SplashControllerProvider._()
     : super(
         from: null,
@@ -101,23 +101,24 @@ final class SplashControllerProvider
   SplashController create() => SplashController();
 }
 
-String _$splashControllerHash() => r'0d6ecc1b8b12920b33ed2e6cde436169ef4bb6c6';
+String _$splashControllerHash() => r'be2412bcc440f052d52fd51b2060687577569314';
 
-/// Declarative Riverpod AsyncNotifier managing the backend server health verification.
+/// Declarative Riverpod AsyncNotifier managing dynamic mobile configuration bootstrap.
 ///
-/// Automatically provides an [AsyncValue<HealthEntity>] with pattern-matching [.when()].
+/// Automatically provides an [AsyncValue<MobileConfigEntity>] with pattern-matching [.when()].
 
-abstract class _$SplashController extends $AsyncNotifier<HealthEntity> {
-  FutureOr<HealthEntity> build();
+abstract class _$SplashController extends $AsyncNotifier<MobileConfigEntity> {
+  FutureOr<MobileConfigEntity> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<HealthEntity>, HealthEntity>;
+    final ref =
+        this.ref as $Ref<AsyncValue<MobileConfigEntity>, MobileConfigEntity>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<HealthEntity>, HealthEntity>,
-              AsyncValue<HealthEntity>,
+              AnyNotifier<AsyncValue<MobileConfigEntity>, MobileConfigEntity>,
+              AsyncValue<MobileConfigEntity>,
               Object?,
               Object?
             >;

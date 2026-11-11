@@ -10,6 +10,9 @@ class ApiEndpoints {
   /// Health check endpoint: `/health`
   static const String health = '/health';
 
+  /// Remote Mobile Configuration: `/mobile/config`
+  static const String mobileConfig = '/mobile/config';
+
   /// Token refresh endpoint: `/auth/refresh`
   static const String refreshToken = '/auth/refresh';
 }

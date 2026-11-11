@@ -12,7 +12,7 @@ import 'package:mobiforge/features/splash/presentation/widgets/splash_error_view
 import 'package:mobiforge/features/splash/presentation/widgets/splash_loading_view.dart';
 import 'package:mobiforge/features/splash/presentation/widgets/splash_success_view.dart';
 
-/// Full-screen Splash View handling backend health verification.
+/// Full-screen Splash View handling remote bootstrap configuration.
 ///
 /// Follows Clean Architecture:
 /// Listens to [SplashController] and renders declarative states via [.when()].
@@ -21,22 +21,22 @@ class SplashScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 1. Listen for side-effects (logging diagnostics / future routing)
+    // 1. Listen for telemetry & routing side-effects
     ref.listen(splashControllerProvider, (previous, next) {
       next.whenOrNull(
-        data: (health) {
+        data: (config) {
           AppTalker.instance.info(
-            'Health Check OK: ${health.app} (${health.environment})',
+            'Mobile Config Loaded: env=${config.environment}, apiVersion=${config.apiVersion}',
           );
         },
         error: (error, _) {
-          AppTalker.instance.error('Health Check Failed: $error');
+          AppTalker.instance.error('Mobile Config Bootstrap Failed: $error');
         },
       );
     });
 
     // 2. Watch active state
-    final healthState = ref.watch(splashControllerProvider);
+    final configState = ref.watch(splashControllerProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -52,9 +52,9 @@ class SplashScreen extends ConsumerWidget {
 
               const Spacer(flex: 2),
 
-              // Pattern-matched State Rendering
-              healthState.when(
-                data: (health) => SplashSuccessView(health: health),
+              // Declarative Pattern-Matched State Rendering
+              configState.when(
+                data: (config) => SplashSuccessView(config: config),
                 loading: () => const SplashLoadingView(),
                 error: (error, _) => SplashErrorView(
                   error: error,

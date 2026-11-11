@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import 'package:mobiforge/core/config/app_config_manager.dart';
 import 'package:mobiforge/core/di/injection_container.dart';
-import 'package:mobiforge/features/splash/domain/entities/health_entity.dart';
-import 'package:mobiforge/features/splash/domain/usecases/check_server_health_usecase.dart';
+import 'package:mobiforge/features/splash/domain/entities/mobile_config_entity.dart';
+import 'package:mobiforge/features/splash/domain/usecases/get_mobile_config_usecase.dart';
 
 part 'splash_controller.g.dart';
 
@@ -11,33 +12,37 @@ part 'splash_controller.g.dart';
 ///
 /// Enables seamless mock overrides in widget and unit tests without touching GetIt.
 @riverpod
-CheckServerHealthUseCase checkServerHealthUseCase(Ref ref) {
-  return sl<CheckServerHealthUseCase>();
+GetMobileConfigUseCase getMobileConfigUseCase(Ref ref) {
+  return sl<GetMobileConfigUseCase>();
 }
 
-/// Declarative Riverpod AsyncNotifier managing the backend server health verification.
+/// Declarative Riverpod AsyncNotifier managing dynamic mobile configuration bootstrap.
 ///
-/// Automatically provides an [AsyncValue<HealthEntity>] with pattern-matching [.when()].
+/// Automatically provides an [AsyncValue<MobileConfigEntity>] with pattern-matching [.when()].
 @riverpod
 class SplashController extends _$SplashController {
   @override
-  FutureOr<HealthEntity> build() async {
-    return _checkHealth();
+  FutureOr<MobileConfigEntity> build() async {
+    return _fetchConfig();
   }
 
-  Future<HealthEntity> _checkHealth() async {
-    final useCase = ref.read(checkServerHealthUseCaseProvider);
+  Future<MobileConfigEntity> _fetchConfig() async {
+    final useCase = ref.read(getMobileConfigUseCaseProvider);
     final result = await useCase();
 
     return result.fold(
       (failure) => throw failure,
-      (health) => health,
+      (config) {
+        // Cache loaded config into centralized AppConfigManager for downstream features
+        AppConfigManager.instance.updateConfig(config);
+        return config;
+      },
     );
   }
 
-  /// Re-triggers the health check with a fresh [AsyncLoading] state.
+  /// Re-triggers the configuration fetch with a fresh [AsyncLoading] state.
   Future<void> retry() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() => _checkHealth());
+    state = await AsyncValue.guard(() => _fetchConfig());
   }
 }

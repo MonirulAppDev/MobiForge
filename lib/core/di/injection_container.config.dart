@@ -26,8 +26,8 @@ import 'package:mobiforge/features/splash/data/repositories/splash_repository_im
     as _i723;
 import 'package:mobiforge/features/splash/domain/repositories/splash_repository.dart'
     as _i647;
-import 'package:mobiforge/features/splash/domain/usecases/check_server_health_usecase.dart'
-    as _i249;
+import 'package:mobiforge/features/splash/domain/usecases/get_mobile_config_usecase.dart'
+    as _i19;
 import 'package:mobiforge/features/splash/splash_module.dart' as _i387;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -76,8 +76,8 @@ extension GetItInjectableX on _i174.GetIt {
         networkInfo: gh<_i444.NetworkInfo>(),
       ),
     );
-    gh.lazySingleton<_i249.CheckServerHealthUseCase>(
-      () => splashModule.checkServerHealthUseCase(gh<_i647.SplashRepository>()),
+    gh.lazySingleton<_i19.GetMobileConfigUseCase>(
+      () => splashModule.getMobileConfigUseCase(gh<_i647.SplashRepository>()),
     );
     return this;
   }

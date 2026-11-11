@@ -29,12 +29,35 @@ android {
         versionName = flutter.versionName
     }
 
+    flavorDimensions += "default"
+
+    productFlavors {
+        create("dev") {
+            dimension = "default"
+            applicationIdSuffix = ".dev"
+            resValue("string", "app_name", "MobiForge Dev")
+        }
+        create("staging") {
+            dimension = "default"
+            applicationIdSuffix = ".staging"
+            resValue("string", "app_name", "MobiForge Staging")
+        }
+        create("prod") {
+            dimension = "default"
+            resValue("string", "app_name", "MobiForge")
+        }
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
         }
+    }
+
+    buildFeatures {
+        resValues = true
     }
 }
 

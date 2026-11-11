@@ -1,15 +1,38 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-/// Type-safe Environment Configuration loaded strictly from `.env` file.
+/// Supported application flavors for multi-environment architecture.
+enum AppFlavor { dev, staging, prod }
+
+/// Type-safe Environment Configuration loaded strictly from flavor-specific `.env` file.
 ///
 /// Follows the "Fail-Fast" principle: Throws an explicit error if critical
 /// environment variables are missing, ensuring ZERO hardcoded fallback URLs.
 class EnvConfig {
   EnvConfig._();
 
-  /// Loads the environment file. Must be called in `main()` before `runApp()`.
-  static Future<void> init() async {
-    await dotenv.load(fileName: '.env');
+  static AppFlavor _flavor = AppFlavor.dev;
+
+  /// Current active flavor (dev, staging, prod)
+  static AppFlavor get flavor => _flavor;
+
+  /// Whether current build is in development mode
+  static bool get isDev => _flavor == AppFlavor.dev;
+
+  /// Whether current build is in staging mode
+  static bool get isStaging => _flavor == AppFlavor.staging;
+
+  /// Whether current build is in production mode
+  static bool get isProd => _flavor == AppFlavor.prod;
+
+  /// Loads the flavor-specific environment file. Must be called in `main()` before `runApp()`.
+  static Future<void> init({AppFlavor flavor = AppFlavor.dev}) async {
+    _flavor = flavor;
+    final fileName = switch (flavor) {
+      AppFlavor.dev => '.env.dev',
+      AppFlavor.staging => '.env.staging',
+      AppFlavor.prod => '.env.prod',
+    };
+    await dotenv.load(fileName: fileName);
   }
 
   /// Helper to safely retrieve required environment variables or throw an explicit error.

@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
 
 import 'package:mobiforge/core/constants/api_endpoints.dart';
-import 'package:mobiforge/features/splash/data/models/health_model.dart';
+import 'package:mobiforge/features/splash/data/models/mobile_config_model.dart';
 
 part 'splash_remote_data_source.g.dart';
 
@@ -14,10 +14,10 @@ part 'splash_remote_data_source.g.dart';
 abstract class SplashRemoteDataSource {
   factory SplashRemoteDataSource(Dio dio, {String? baseUrl}) = _SplashRemoteDataSource;
 
-  /// Calls the `/health` endpoint to check backend health status.
+  /// Calls the `/mobile/config` endpoint to retrieve dynamic app configuration.
   /// Automatically binds [CancelToken] via Retrofit's [@CancelRequest] annotation.
-  @GET(ApiEndpoints.health)
-  Future<HealthModel> checkServerHealth({
+  @GET(ApiEndpoints.mobileConfig)
+  Future<MobileConfigResponseModel> getMobileConfig({
     @CancelRequest() CancelToken? cancelToken,
   });
 }
