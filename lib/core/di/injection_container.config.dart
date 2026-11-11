@@ -20,12 +20,23 @@ import 'package:mobiforge/core/network/network_info.dart' as _i444;
 import 'package:mobiforge/core/network/network_module.dart' as _i503;
 import 'package:mobiforge/core/network/token_refresher.dart' as _i967;
 import 'package:mobiforge/core/network/token_storage.dart' as _i442;
+import 'package:mobiforge/features/auth/auth_module.dart' as _i69;
+import 'package:mobiforge/features/auth/data/datasources/auth_remote_data_source.dart'
+    as _i402;
+import 'package:mobiforge/features/auth/data/repositories/auth_repository_impl.dart'
+    as _i855;
+import 'package:mobiforge/features/auth/domain/repositories/auth_repository.dart'
+    as _i753;
+import 'package:mobiforge/features/auth/domain/usecases/register_usecase.dart'
+    as _i754;
 import 'package:mobiforge/features/splash/data/datasources/splash_remote_data_source.dart'
     as _i299;
 import 'package:mobiforge/features/splash/data/repositories/splash_repository_impl.dart'
     as _i723;
 import 'package:mobiforge/features/splash/domain/repositories/splash_repository.dart'
     as _i647;
+import 'package:mobiforge/features/splash/domain/usecases/check_server_health_usecase.dart'
+    as _i249;
 import 'package:mobiforge/features/splash/domain/usecases/get_mobile_config_usecase.dart'
     as _i19;
 import 'package:mobiforge/features/splash/splash_module.dart' as _i387;
@@ -38,6 +49,7 @@ extension GetItInjectableX on _i174.GetIt {
   }) {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final networkModule = _$NetworkModule();
+    final authModule = _$AuthModule();
     final splashModule = _$SplashModule();
     gh.lazySingleton<_i895.Connectivity>(() => networkModule.connectivity);
     gh.lazySingleton<_i442.TokenStorage>(() => networkModule.tokenStorage);
@@ -67,8 +79,17 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i967.TokenRefresher>(),
       ),
     );
+    gh.lazySingleton<_i402.AuthRemoteDataSource>(
+      () => authModule.authRemoteDataSource(gh<_i361.Dio>()),
+    );
     gh.lazySingleton<_i299.SplashRemoteDataSource>(
       () => splashModule.splashRemoteDataSource(gh<_i361.Dio>()),
+    );
+    gh.lazySingleton<_i753.AuthRepository>(
+      () => _i855.AuthRepositoryImpl(
+        remoteDataSource: gh<_i402.AuthRemoteDataSource>(),
+        networkInfo: gh<_i444.NetworkInfo>(),
+      ),
     );
     gh.lazySingleton<_i647.SplashRepository>(
       () => _i723.SplashRepositoryImpl(
@@ -76,13 +97,21 @@ extension GetItInjectableX on _i174.GetIt {
         networkInfo: gh<_i444.NetworkInfo>(),
       ),
     );
+    gh.lazySingleton<_i249.CheckServerHealthUseCase>(
+      () => splashModule.checkServerHealthUseCase(gh<_i647.SplashRepository>()),
+    );
     gh.lazySingleton<_i19.GetMobileConfigUseCase>(
       () => splashModule.getMobileConfigUseCase(gh<_i647.SplashRepository>()),
+    );
+    gh.lazySingleton<_i754.RegisterUseCase>(
+      () => authModule.registerUseCase(gh<_i753.AuthRepository>()),
     );
     return this;
   }
 }
 
 class _$NetworkModule extends _i503.NetworkModule {}
+
+class _$AuthModule extends _i69.AuthModule {}
 
 class _$SplashModule extends _i387.SplashModule {}

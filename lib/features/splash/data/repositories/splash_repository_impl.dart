@@ -2,6 +2,7 @@ import 'package:injectable/injectable.dart';
 import 'package:mobiforge/core/repositories/base_repository.dart';
 import 'package:mobiforge/core/utils/typedefs.dart';
 import 'package:mobiforge/features/splash/data/datasources/splash_remote_data_source.dart';
+import 'package:mobiforge/features/splash/domain/entities/health_entity.dart';
 import 'package:mobiforge/features/splash/domain/entities/mobile_config_entity.dart';
 import 'package:mobiforge/features/splash/domain/repositories/splash_repository.dart';
 
@@ -19,6 +20,14 @@ class SplashRepositoryImpl extends BaseRepository implements SplashRepository {
     required this.remoteDataSource,
     required super.networkInfo,
   });
+
+  @override
+  ResultFuture<HealthEntity> checkServerHealth() {
+    return safeNetworkCall(() async {
+      final response = await remoteDataSource.checkServerHealth();
+      return response.toEntity();
+    });
+  }
 
   @override
   ResultFuture<MobileConfigEntity> getMobileConfig() {

@@ -8,7 +8,8 @@ import 'package:mobiforge/core/constants/app_colors.dart';
 import 'package:mobiforge/core/constants/app_constants.dart';
 import 'package:mobiforge/core/di/injection_container.dart';
 import 'package:mobiforge/core/logging/riverpod_talker_observer.dart';
-import 'package:mobiforge/features/splash/presentation/screens/splash_screen.dart';
+import 'package:mobiforge/core/routes/app_router.dart';
+import 'package:mobiforge/core/theme/app_theme.dart';
 
 /// Centralized application bootstrap routine parameterized by [AppFlavor].
 Future<void> bootstrap({required AppFlavor flavor}) async {
@@ -58,23 +59,15 @@ class MobiForgeApp extends StatelessWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
-        return MaterialApp(
+        return MaterialApp.router(
           title: '${AppConstants.appName}$titleSuffix',
           debugShowCheckedModeBanner: EnvConfig.isDev,
-          theme: ThemeData(
-            useMaterial3: true,
-            brightness: Brightness.dark,
-            scaffoldBackgroundColor: AppColors.background,
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.primary,
-              surface: AppColors.surface,
-              error: AppColors.error,
-            ),
-          ),
-          home: child,
+          routerConfig: appRouter,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: ThemeMode.dark,
         );
       },
-      child: const SplashScreen(),
     );
   }
 }

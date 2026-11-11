@@ -10,9 +10,15 @@ class ApiEndpoints {
   /// Health check endpoint: `/health`
   static const String health = '/health';
 
-  /// Remote Mobile Configuration: `/mobile/config`
-  static const String mobileConfig = '/mobile/config';
+  /// Remote Mobile Configuration: `/api/v1/mobile/config`
+  static const String mobileConfig = '/api/v1/mobile/config';
 
-  /// Token refresh endpoint: `/auth/refresh`
-  static const String refreshToken = '/auth/refresh';
+  /// User Registration endpoint: `/api/v1/auth/register`
+  static const String register = '/api/v1/auth/register';
+
+  /// User Login endpoint: `/api/v1/auth/login`
+  static const String login = '/api/v1/auth/login';
+
+  /// Token refresh endpoint: `/api/v1/auth/refresh`
+  static const String refreshToken = '/api/v1/auth/refresh';
 }

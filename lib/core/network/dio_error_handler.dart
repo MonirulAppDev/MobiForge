@@ -14,14 +14,18 @@ class DioErrorHandler {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-        return const ServerException(
-          message: 'Connection timeout. Backend server is taking too long to respond.',
+        final uri = error.requestOptions.uri;
+        final host = uri.host.isNotEmpty ? '${uri.host}:${uri.port}' : 'the server';
+        return ServerException(
+          message: 'Connection timeout reaching $host. Backend server is taking too long to respond.',
           statusCode: 408,
         );
 
       case DioExceptionType.connectionError:
-        return const ServerException(
-          message: 'Cannot reach the backend server. Please verify if the server is running on localhost:8080.',
+        final uri = error.requestOptions.uri;
+        final host = uri.host.isNotEmpty ? '${uri.host}:${uri.port}' : 'the server';
+        return ServerException(
+          message: 'Cannot reach backend server at $host. Please check your network and verify if the host is reachable.',
           statusCode: 503,
         );
 

@@ -5,19 +5,18 @@ import 'package:gap/gap.dart';
 
 import 'package:mobiforge/core/constants/app_colors.dart';
 import 'package:mobiforge/features/splash/domain/entities/mobile_config_entity.dart';
+import 'package:mobiforge/features/splash/presentation/widgets/splash_loading_view.dart';
 
 /// Minimal, executive-grade representation of the bootstrap success state.
 ///
 /// Follows User Directive:
-/// Eliminates cluttered response dumps, displaying only essential status
-/// (Operational / Maintenance / Force Update) with clean typography.
+/// Eliminates cluttered response dumps, status badges, app/env/status tags.
+/// Seamlessly continues spinner transition when operational, or gates behind
+/// Maintenance / Force Update if mandated by backend.
 class SplashSuccessView extends StatelessWidget {
   final MobileConfigEntity config;
 
-  const SplashSuccessView({
-    super.key,
-    required this.config,
-  });
+  const SplashSuccessView({super.key, required this.config});
 
   @override
   Widget build(BuildContext context) {
@@ -29,67 +28,8 @@ class SplashSuccessView extends StatelessWidget {
       return _buildForceUpdateCard();
     }
 
-    return _buildMinimalReadyStatus();
-  }
-
-  /// Minimal, subtle pill indicating ready status without visual clutter
-  Widget _buildMinimalReadyStatus() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(30.r),
-        border: Border.all(color: AppColors.surfaceLight),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 8.r,
-            height: 8.r,
-            decoration: const BoxDecoration(
-              color: AppColors.success,
-              shape: BoxShape.circle,
-            ),
-          ).animate(onPlay: (c) => c.repeat(reverse: true)).scale(
-                begin: const Offset(0.8, 0.8),
-                end: const Offset(1.2, 1.2),
-                duration: 1000.ms,
-              ),
-          Gap(8.w),
-          Text(
-            'Ready',
-            style: TextStyle(
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary,
-              letterSpacing: 0.3,
-            ),
-          ),
-          Gap(6.w),
-          Text(
-            '•',
-            style: TextStyle(fontSize: 10.sp, color: AppColors.textMuted),
-          ),
-          Gap(6.w),
-          Text(
-            'v${config.latestAppVersion}',
-            style: TextStyle(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w400,
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ],
-      ),
-    ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.2, end: 0);
+    // Fully operational: keep smooth minimal loader during transition
+    return const SplashLoadingView();
   }
 
   /// Clean Maintenance mode gatekeeper
@@ -150,7 +90,11 @@ class SplashSuccessView extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.system_update_rounded, size: 40.r, color: AppColors.primary),
+          Icon(
+            Icons.system_update_rounded,
+            size: 40.r,
+            color: AppColors.primary,
+          ),
           Gap(12.h),
           Text(
             'Update Required',

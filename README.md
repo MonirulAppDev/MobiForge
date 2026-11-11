@@ -18,6 +18,11 @@
    - [Phase 8: Enterprise Multi-Flavor Architecture](#phase-8-enterprise-multi-flavor-architecture-dev-staging-prod)
    - [Phase 9: Network Timeout Optimization & ADB Port Forwarding](#phase-9-network-timeout-optimization--physical-device-port-forwarding)
    - [Phase 10: Remote Mobile Config & Microservices Registry](#phase-10-remote-mobile-configuration--microservice-service-registry)
+   - [Phase 11: Enterprise User Registration & Clean Auth Architecture](#phase-11-enterprise-user-registration--clean-auth-architecture)
+   - [Phase 12: Dual-Stack Host Health Check & Root Origin Resolution](#phase-12-dual-stack-host-health-check--root-origin-resolution)
+   - [Phase 13: Modular Design System & Orange-Charcoal Theme Engine](#phase-13-modular-design-system--orange-charcoal-theme-engine)
+   - [Phase 14: Presentation Layer Purity & Strict SOLID/Clean-Architecture Audit](#phase-14-presentation-layer-purity--strict-solidclean-architecture-audit)
+   - [Phase 15: Executive UI Minimalism & Widget Decomposition](#phase-15-executive-ui-minimalism--widget-decomposition)
 4. [SOLID Principles in Action](#-solid-principles-in-action)
 5. [Visual Network Pipeline](#-visual-network-pipeline)
 6. [Tech Stack & Architecture Map](#-tech-stack--architecture-map)
@@ -285,6 +290,146 @@ Standard mobile network requests fail in real life. We audited every edge case a
      - Maintenance state: Friendly, non-blocking maintenance dialog.
      - Force update state: Clean version upgrade prompt.
      - Zero technical JSON dumps or cluttered debug badges.
+
+---
+
+### Phase 11: Enterprise User Registration & Clean Auth Architecture
+
+#### 1. What Was Built
+- **Domain Layer ([`lib/features/auth/domain/`](lib/features/auth/domain/))**:
+  - Pure business entities: [`UserEntity`](lib/features/auth/domain/entities/user_entity.dart) and [`RoleEntity`](lib/features/auth/domain/entities/role_entity.dart) extending `Equatable`.
+  - Immutable input parameter object: [`RegisterParams`](lib/features/auth/domain/entities/register_params.dart).
+  - Business repository contract: [`AuthRepository`](lib/features/auth/domain/repositories/auth_repository.dart).
+  - Single Responsibility business use case: [`RegisterUseCase`](lib/features/auth/domain/usecases/register_usecase.dart).
+- **Data Layer ([`lib/features/auth/data/`](lib/features/auth/data/))**:
+  - Immutable Data Transfer Objects with Freezed & JSON Serialization: [`UserModel`](lib/features/auth/data/models/user_model.dart), [`RoleModel`](lib/features/auth/data/models/role_model.dart), [`RegisterRequestModel`](lib/features/auth/data/models/register_request_model.dart), and [`RegisterResponseModel`](lib/features/auth/data/models/register_response_model.dart).
+  - Declarative Retrofit REST API Client: [`AuthRemoteDataSource`](lib/features/auth/data/datasources/auth_remote_data_source.dart) targeting `POST /auth/register`.
+  - Production-hardened Repository implementation: [`AuthRepositoryImpl`](lib/features/auth/data/repositories/auth_repository_impl.dart) inheriting centralized pre-flight checks and exception boundaries from `BaseRepository`.
+  - Dependency Injection Module: [`AuthModule`](lib/features/auth/auth_module.dart) wiring Retrofit and UseCase into GetIt.
+- **Presentation Layer ([`lib/features/auth/presentation/`](lib/features/auth/presentation/))**:
+  - Declarative state management via Riverpod: [`RegisterController`](lib/features/auth/presentation/controllers/register_controller.dart) returning `AsyncValue<UserEntity?>`.
+  - Modern Executive Registration Screen: [`RegisterScreen`](lib/features/auth/presentation/screens/register_screen.dart).
+  - Atomic UI Components (< 150 lines): [`RegisterHeader`](lib/features/auth/presentation/widgets/register_header.dart), [`RegisterForm`](lib/features/auth/presentation/widgets/register_form.dart), and [`RegisterSuccessDialog`](lib/features/auth/presentation/widgets/register_success_dialog.dart).
+  - Centralized Navigation Engine: [`app_router.dart`](lib/core/routes/app_router.dart) built with `go_router` featuring seamless transitions from Splash to Register.
+
+#### 2. Why It Was Built (The Problem It Solves)
+- User onboarding is the primary gateway for an e-commerce platform. Without strict input validation, type-safe network mapping, and proper error translation, onboarding drops precipitously due to confusing error messages (e.g. raw 409 database unique key errors).
+- This implementation provides a robust, delightful onboarding journey with immediate client-side validation, safe network boundaries, and executive confirmation dialogs.
+
+#### 3. How It Was Implemented (Architectural Patterns & Trade-offs)
+- **Strict Clean Architecture Layer Isolation**: The Domain Layer remains completely unaware of whether the API is REST, GraphQL, or simulated. It has zero dependencies on Flutter UI, Dio, or JSON serialization.
+- **GetIt + Riverpod Bridge**: `RegisterUseCase` is registered via compile-time Injectable into GetIt and surfaced into the Riverpod graph via `registerUseCaseProvider`. This enables effortless mock overrides in widget tests.
+- **Atomic Decomposition**: Each widget in `presentation/widgets/` is kept strictly under 150 lines, honoring the Single Responsibility Principle and optimizing Flutter's element rebuild cycles.
+
+#### 4. Critical Edge Cases & Failure Modes Handled
+1. **Duplicate Email Conflict (HTTP 409)**: Caught by `safeNetworkCall` and extracted by `DioErrorHandler`, displaying a friendly *"email already registered"* floating banner rather than crashing.
+2. **Offline & Intermittent Drops**: Pre-flight network check (`BaseRepository`) catches offline status immediately in 0ms without wasting battery or HTTP connections.
+3. **Password Security**: Obscure text toggle with explicit show/hide icon and minimum character safety.
+4. **Memory Leaks**: All `TextEditingController` instances are safely disposed in `State.dispose()`.
+
+---
+
+### Phase 12: Dual-Stack Host Health Check & Root Origin Resolution
+
+#### 1. What Was Built
+- **Environment & LAN Host Configuration ([`.env.dev`](.env.dev), [`.env`](.env), [`.env.example`](.env.example))**:
+  - Configured base URL to `http://10.192.168.134:8080` so that root `/health` and sub-path `/api/v1` routes both resolve cleanly without path mangling.
+- **Endpoints Architecture ([`api_endpoints.dart`](lib/core/constants/api_endpoints.dart))**:
+  - `health = '/health'`
+  - `mobileConfig = '/api/v1/mobile/config'`
+  - `register = '/api/v1/auth/register'`
+- **Domain Layer ([`lib/features/splash/domain/`](lib/features/splash/domain/))**:
+  - Restored [`HealthEntity`](lib/features/splash/domain/entities/health_entity.dart) with `isHealthy` business getter.
+  - Added [`CheckServerHealthUseCase`](lib/features/splash/domain/usecases/check_server_health_usecase.dart).
+- **Data Layer ([`lib/features/splash/data/`](lib/features/splash/data/))**:
+  - Created [`HealthModel`](lib/features/splash/data/models/health_model.dart) with Freezed & JSON serialization.
+  - Pure declarative Retrofit REST API client [`SplashRemoteDataSource`](lib/features/splash/data/datasources/splash_remote_data_source.dart) directly handling both `@GET(ApiEndpoints.health)` and `@GET(ApiEndpoints.mobileConfig)` with zero redundant intermediate wrappers.
+- **Presentation Layer**:
+  - Updated [`SplashController`](lib/features/splash/presentation/controllers/splash_controller.dart) to verify health check and fetch dynamic mobile configuration.
+  - Updated [`SplashSuccessView`](lib/features/splash/presentation/widgets/splash_success_view.dart) to show server online status with backend metadata badges.
+
+#### 2. Why It Was Built (The Problem It Solves)
+- When `BASE_URL` contains an API version prefix like `/api/v1`, standard HTTP clients append relative paths, turning `/health` into `/api/v1/health`.
+- On real-world microservices backends, Kubernetes ingress, and Go/Node gateways, health probes (`/health`) are hosted at the root origin level, while business APIs reside under `/api/v1`. This mismatch resulted in immediate 404 errors.
+- The new origin resolver guarantees that `/health` queries the root server while all subsequent business calls automatically route to `/api/v1`.
+
+---
+
+### Phase 13: Modular Design System & Orange-Charcoal Theme Engine
+
+#### 1. What Was Built
+- **Modular Theme Architecture ([`lib/core/theme/`](lib/core/theme/))**:
+  - [`AppColorSchemeConfig`](lib/core/theme/app_color_scheme.dart): Configures Material 3 Light & Dark ColorSchemes uniting signature **Vibrant Orange (`#FF6B00`)** with **Deep Charcoal (`#121214`)**.
+  - [`AppTypographyConfig`](lib/core/theme/app_typography.dart): Complete **Poppins** typography system with strictly enforced **body font size 12 (`bodyMedium`)**.
+  - [`AppButtonThemeConfig`](lib/core/theme/app_button_theme.dart): Unified theme specifications for `ElevatedButton`, `OutlinedButton`, and `TextButton`.
+  - [`AppInputThemeConfig`](lib/core/theme/app_input_theme.dart): Refined text field input decorations with 12px radii, focus accent rings, and clean error states.
+  - [`AppBarThemeConfig`](lib/core/theme/app_bar_theme.dart): Zero-elevation AppBars equipped with adaptive edge-to-edge system navigation overlays.
+  - [`AppCardThemeConfig`](lib/core/theme/app_card_theme.dart): Rounded surface cards (`16px`) and modal dialog styling.
+  - [`AppTheme`](lib/core/theme/app_theme.dart): Central Base Theme Aggregator compiling all discrete component configurations into production `ThemeData lightTheme` and `ThemeData darkTheme`.
+- **Application Integration ([`lib/main.dart`](lib/main.dart))**:
+  - Attached `AppTheme.lightTheme` and `AppTheme.darkTheme` to `MaterialApp.router`.
+  - Updated centralized color palette [`AppColors`](lib/core/constants/app_colors.dart) to propagate the Orange-Charcoal brand across legacy widgets.
+
+#### 2. Why It Was Built (The Problem It Solves)
+- Standard Flutter apps commonly declare giant monolithic `ThemeData` blocks spanning hundreds of unmaintainable lines inside `main.dart`.
+- This modular architecture decomposes every UI element (buttons, typography, inputs, cards) into dedicated, isolated classes following the **Single Responsibility Principle**.
+- A new designer or developer can customize button styles or input borders without risking regressions across colors or typography.
+
+#### 3. How It Was Implemented (Architectural Patterns & Trade-offs)
+- **Component Composition Pattern**: `AppTheme` does not hardcode styles; it delegates to specialized config classes.
+- **Strict User Directives Honored**: Font family is strictly Poppins and body text scale is strictly 12sp.
+- **Automated Test Isolation**: Font fetching is decoupled in widget tests (`testWidgets`), ensuring lightning-fast offline test execution.
+
+---
+
+### Phase 14: Presentation Layer Purity & Strict SOLID/Clean-Architecture Audit
+
+#### 1. What Was Built & Refactored
+- **Purification of `SplashController` ([`lib/features/splash/presentation/controllers/splash_controller.dart`](lib/features/splash/presentation/controllers/splash_controller.dart))**:
+  - Completely stripped out unnecessary `Equatable` imports and artificial `SplashState` wrappers from the presentation controller.
+  - Restored `SplashController` to its pure, idiomatic Riverpod `AsyncNotifier` signature (`AsyncNotifier<MobileConfigEntity>`).
+  - Restored domain use case constructor injection (`ref.read(getMobileConfigUseCaseProvider)`).
+  - Maintained declarative pattern matching (`.when(data, loading, error)`) in [`SplashScreen`](lib/features/splash/presentation/screens/splash_screen.dart).
+- **Streamlined Data Layer ([`lib/features/splash/data/datasources/splash_remote_data_source.dart`](lib/features/splash/data/datasources/splash_remote_data_source.dart))**:
+  - Eliminated intermediate `SplashRestClient` wrapper. `SplashRemoteDataSource` is the direct declarative Retrofit REST interface.
+- **Exhaustive Architectural Audit across the Codebase**:
+  - Verified that `Equatable` is **strictly confined** to Domain Entities (`UserEntity`, `RoleEntity`, `HealthEntity`, `MobileConfigEntity`), Domain Parameters (`RegisterParams`), and Core Failures (`Failure`).
+  - Verified zero UI leaks, zero data-serialization logic in the Domain layer, and zero business logic inside UI widgets.
+
+#### 2. Why It Was Built (The Problem It Solves)
+- In Clean Architecture, presentation controllers should manage view state directly using the framework's native primitives (Riverpod's `AsyncValue<T>`).
+- Injecting `Equatable` into presentation controllers to build synthetic state wrappers creates redundant boilerplate and violates the **Single Responsibility Principle (SRP)** by mixing value-equality paradigms into reactive notifier logic.
+- Riverpod's `AsyncValue` already provides out-of-the-box loading, error, data transitions, and identity checking without needing extra state classes.
+
+#### 3. How It Was Implemented (Architectural Patterns & Trade-offs)
+- **Zero Equatable in Presentation**: Audited the entire codebase to guarantee no presentation controller imports `package:equatable/equatable.dart`.
+- **Clean DTO to Entity Mapping**: Data models remain immutable Freezed classes with `toEntity()` mappers, keeping the Domain layer completely decoupled from external network JSON schemas.
+- **Automated Verification**:
+  - `flutter analyze` completed with **0 warnings and 0 errors** (`No issues found!`).
+  - `flutter test` executed all test suites with **100% pass rate**.
+
+---
+
+### Phase 15: Executive UI Minimalism & Widget Decomposition
+
+#### 1. What Was Built & Refactored
+- **Atomic Widget Extraction ([`lib/features/splash/presentation/widgets/splash_brand_header.dart`](lib/features/splash/presentation/widgets/splash_brand_header.dart))**:
+  - Extracted the brand logo, name, and tagline animations into an isolated `SplashBrandHeader` widget.
+  - Extracted sign-in footer navigation into [`RegisterFooter`](lib/features/auth/presentation/widgets/register_footer.dart).
+  - Completely purged private `_buildSomething()` helper methods from [`SplashScreen`](lib/features/splash/presentation/screens/splash_screen.dart) and [`RegisterScreen`](lib/features/auth/presentation/screens/register_screen.dart).
+- **Elimination of Debug Metadata Clutter**:
+  - Purged all technical debug tags (`App`, `Env`, `Status`, `Ready • v1.2.0`, `Clean Architecture footer`) from the Splash screen UI.
+  - Refactored [`SplashSuccessView`](lib/features/splash/presentation/widgets/splash_success_view.dart) and [`SplashLoadingView`](lib/features/splash/presentation/widgets/splash_loading_view.dart) to show a clean, high-fidelity spinner until automatic transition to `/register`.
+- **Dynamic Network Error Telemetry**:
+  - Refactored [`DioErrorHandler`](lib/core/network/dio_error_handler.dart) to extract the actual destination host & port dynamically (`${uri.host}:${uri.port}`) rather than hardcoding static fallback strings.
+
+#### 2. Why It Was Built (The Problem It Solves)
+- Production mobile apps should never display raw backend metadata (such as backend app name, environment name, or database health status) on public screens.
+- Inline helper methods (`_buildBrandHeader`, `_buildFooter`) prevent Flutter from performing sub-tree diffing and `const` constructor caching. Extracting them into distinct `StatelessWidget` classes ensures maximum rendering performance and strict **Single Responsibility**.
+
+#### 3. How It Was Implemented
+- **Pure Declarative UI**: Screen files are reduced to pure, single-responsibility scaffolds under 75 lines.
+- **Verification**: `flutter analyze` verified **0 issues** and `flutter test` passed all 7 tests.
 
 ---
 
